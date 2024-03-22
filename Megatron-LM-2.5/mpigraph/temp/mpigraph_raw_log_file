@@ -1,0 +1,29 @@
+mlx5_0:1
+INFO: host=agpu1425 rank=0 lrank=0 cores=8 gpu= cpu=8-15 net=mlx5_0:1
+mlx5_0:1
+INFO: host=agpu1426 rank=1 lrank=0 cores=8 gpu= cpu=8-15 net=mlx5_0:1
+[agpu1426:2482145] MCW rank 1 bound to socket 0[core 8[hwt 0]], socket 0[core 9[hwt 0]], socket 0[core 10[hwt 0]], socket 0[core 11[hwt 0]], socket 0[core 12[hwt 0]], socket 0[core 13[hwt 0]], socket 0[core 14[hwt 0]], socket 0[core 15[hwt 0]]: [../../../../../../../../B./B./B./B./B./B./B./B./../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
+[agpu1425:2865240] MCW rank 0 bound to socket 0[core 8[hwt 0]], socket 0[core 9[hwt 0]], socket 0[core 10[hwt 0]], socket 0[core 11[hwt 0]], socket 0[core 12[hwt 0]], socket 0[core 13[hwt 0]], socket 0[core 14[hwt 0]], socket 0[core 15[hwt 0]]: [../../../../../../../../B./B./B./B./B./B./B./B./../../../../../../../../../../../../../../../..][../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../../..]
+START mpiGraph v1.5
+MsgSize	100663296
+Times	10
+Window	10
+Procs	2
+
+1 of 2 (50.0%)
+Gathering results
+
+Send max	14493.356528
+Send avg	12554.060785
+
+Send	agpu1425:0	agpu1426:1	
+agpu1425:0 to	0.000	14493.357	
+agpu1426:1 to	11072.496	0.000	
+
+Recv max	14497.700942
+Recv avg	12555.674731
+
+Recv	agpu1425:0	agpu1426:1	
+agpu1425:0 from	0.000	11072.472	
+agpu1426:1 from	14497.701	0.000	
+END mpiGraph

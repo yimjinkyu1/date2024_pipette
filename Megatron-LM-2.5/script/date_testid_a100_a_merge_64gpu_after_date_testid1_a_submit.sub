@@ -1,0 +1,196 @@
+#! /bin/bash
+
+
+sh /home/sr5/jinkyu.yim/ai_framework/Megatron-LM-2.5/clear.sh
+
+export CC=/apps/gcc/gcc-8.3.0/bin/gcc
+export CXX=/apps/gcc/gcc-8.3.0/bin/g++
+
+export OMP_NUM_THREADS=128
+export NCCL_IB_TIMEOUT=220
+export NCCL_ASYNC_ERROR_HANDLING=0
+
+DATE=$(date +%Y%m%d_%H-%M-%S)
+
+
+export CC=/apps/gcc/gcc-8.3.0/bin/gcc
+export CXX=/apps/gcc/gcc-8.3.0/bin/g++
+
+export NCCL_IB_TIMEOUT=220
+export NCCL_ASYNC_ERROR_HANDLING=0
+
+DATE=$(date +%Y%m%d_%H-%M-%S)
+DATA_PATH=/scratch/jinkyu.yim/NLP/my-gpt2_text_document
+
+B2_JOBID=$B2_JOBID
+LSB_JOBID=$B2_JOBID
+
+export HOSTLIST=`echo $B2_DP_HOSTS | sed s/,/' '/g`
+
+GPUS_PER_NODE=8
+MASTER_PORT="12223"
+NNODES=`echo $HOSTLIST | wc -w`
+WORLD_SIZE=$(($GPUS_PER_NODE*$NNODES))
+KILL_PROGRAM="/home/sr5/jinkyu.yim/ai_framework/Megatron-LM-2.5/script/kill_garbage_process.sh"
+
+#profile program
+PROFILE_GPU_MEM_PROGRAM="/home/sr5/jinkyu.yim/ai_framework/Megatron-LM-2.5/profile/run_profile_gpumem.py"
+MERGE_PROFILE_PROGRAM="/home/sr5/jinkyu.yim/ai_framework/Megatron-LM-2.5/profile/log_to_json_v2.py"
+MERGE_PROFILE_FILE="/home/sr5/jinkyu.yim/ai_framework/Megatron-LM-2.5/script/total_profile/merge_profile_real_result_a100_v2.json"
+
+
+#nccl program
+#PROGRAM_NCCL_TEST="/home/sr5/jinkyu.yim/ai_framework/Megatron-LM-2.5/strategy/nccl-test/multi_nccl_test.sh"
+PROGRAM_NCCL_TEST="/home/sr5/jinkyu.yim/ai_framework/Megatron-LM-2.5/strategy/nccl-test/nccl-test-a100/run_rrb_nccl_test.sh"
+
+#do-mps
+PROGRAM_DO_MPS="/home/sr5/jinkyu.yim/ai_framework/Megatron-LM-2.5/strategy/merge4/llm_train_strategy_assignment_total_v3.py"
+
+PROGRAM_MAKER_MERGE="/home/sr5/jinkyu.yim/ai_framework/Megatron-LM-2.5/strategy/merge4/maker_merge_s2_test_total_other.py"
+
+#log path
+LOG_PATH=/home/sr5/jinkyu.yim/ai_framework/Megatron-LM-2.5/script/GPT-test/fp32/fp32_expid_1_${DATE}_${LSB_JOBID}
+
+CLEAN_GARBAGE_RANK_FILE=${LOG_PATH}/mpirank/garbage_rank_file
+
+#opt_path
+OPT_FILE_PATH="${LOG_PATH}/opt/opt_result_file"
+
+mkdir -p ${LOG_PATH}
+mkdir -p ${LOG_PATH}/mpirank
+mkdir -p ${LOG_PATH}/mpigraph
+mkdir -p ${LOG_PATH}/assignment
+mkdir -p ${LOG_PATH}/jsonlog/
+mkdir -p ${LOG_PATH}/profile/
+mkdir -p ${LOG_PATH}/nccl/
+mkdir -p ${LOG_PATH}/job/
+mkdir -p ${LOG_PATH}/write_file/
+mkdir -p ${LOG_PATH}/opt/
+
+NCCL_OUTPUT_FILE="${LOG_PATH}/nccl/nccl_output.json"
+
+#NCCL_OUTPUT_FILE="/home/sr5/jinkyu.yim/ai_framework/Megatron-LM-2.5/script/GPT-test/fp32/fp32_expid_17_20230908_17-10-48_3333/nccl/nccl_output.json"
+
+RUN_JOB_FILE="${LOG_PATH}/job/run_job_file"
+
+clean_rank_options(){
+    for HOST in $HOSTLIST
+        do
+                echo "${HOST} slots=1" >> ${LOG_PATH}/mpirank/garbage_rank_file
+        done
+}
+#celan garbage gpu process
+clean_rank_options
+mpirun -n $NNODES -x LD_LIBRARY_PATH -x PATH -hostfile ${LOG_PATH}/mpirank/garbage_rank_file sh ${KILL_PROGRAM}
+sleep 1
+
+#sort host file 
+for HOST in $HOSTLIST
+do
+    echo "${HOST}" >> ${LOG_PATH}/mpirank/unsorted_rank_file
+done
+HOSTLIST=`cat ${LOG_PATH}/mpirank/unsorted_rank_file | sort`
+for HOST in $HOSTLIST
+do
+    echo "${HOST}" >> ${LOG_PATH}/mpirank/sorted_rank_file
+done
+
+#nccl run (multi_nccl_test.sh HOST_FILE DATA_PATH OUTPUT_FILE)
+start_nccl_time=$(date +%s)
+$PROGRAM_NCCL_TEST ${LOG_PATH}/mpirank/sorted_rank_file ${LOG_PATH}/nccl/ $NCCL_OUTPUT_FILE
+ps -ef | grep -v grep | grep run_rrb_nccl_test
+while [ $? == 0 ]
+do
+    sleep 1
+    ps -ef | grep -v grep | grep run_rrb_nccl_test
+done
+end_nccl_time=$(date +%s)
+duration_nccl_time=$((end_nccl_time - start_nccl_time))
+echo "Execution time nccl : $duration_nccl_time seconds"
+
+RMD=`python ${PROGRAM_MAKER_MERGE} --q "admin_gpu" --gpus 64 --fp_type fp32 --exp_id 1 --sub_test_id 0 --inner_sub_test_id 0 --p2p_dummy_size 1 --model_type GPT --global_batch_size 128 --micro_batch_size 4 --parameter_num "test" --tp 8 --pp 2 --dp 4 --num_layers 64 --hidden_size 3072 --num_attention_heads 24 --ddp_impl "local" --train_iters 10 --network_speed 200G --run_job_file ${LOG_PATH}/write_file/1-a100-GPT8.1B-64gpu-128gbs-64layers-3072hidden-24head-RingTree-a-pipette-no.sub --previous_checkpoint -1 --topo_aware "False" --nccl_algo RingTree --run_local s2 --local_server_list nan --exp_alphabet a --log_path ${LOG_PATH} --b2_jobid ${B2_JOBID} --gpu_type a100`
+
+RUN_JOB_FILE_STR="${LOG_PATH}/write_file/1-a100-GPT8.1B-64gpu-128gbs-64layers-3072hidden-24head-RingTree-a-pipette-no.sub"
+
+sh $RUN_JOB_FILE_STR
+
+ps -ef | grep -v grep | grep sub | grep gpu | grep -v merge
+while [ $? == 0 ]
+do
+    sleep 1
+    ps -ef | grep -v grep | grep sub | grep gpu | grep -v merge
+done
+
+# 0) 1-a100-GPT8.1B-64gpu-128gbs-64layers-3072hidden-24head-RingTree-a
+
+
+mpirun -n $NNODES -x LD_LIBRARY_PATH -x PATH -hostfile ${LOG_PATH}/mpirank/garbage_rank_file sh ${KILL_PROGRAM}
+sleep 1
+ps -ef | grep -v grep | grep kill_garbage_process
+while [ $? == 0 ]
+do
+    sleep 1
+    ps -ef | grep -v grep | grep kill_garbage_process
+done
+
+start_st_time=$(date +%s)
+RMD=`python ${PROGRAM_DO_MPS} --log_path ${LOG_PATH} --write_file_path ${LOG_PATH}/write_file --write_file 2-a100-GPT8.1B-64gpu-128gbs-64layers-3072hidden-24head-RingTree-a-pipette-all --exp_id 2 --server 8 --model_type GPT --parameter_num "test" --global_batch_size 128 --ddp_impl "local" --fp_type fp32 --train_iters 10 --network_speed 200G --q "admin_gpu" --previous_checkpoint -1 --p2p_dummy_size 1 --num_layers 64 --hidden_size 3072 --num_attention_heads 24 --seq_length 1024 --vocab_size 50256 --pp_inter_bw 25 --dp_inter_bw 25 --dp_inner_bw 600 --nccl_test_file ${NCCL_OUTPUT_FILE} --sa_initial_temp 1 --sa_alpha 0.999 --sa_time_limit 10 --gpu_type a100 --b2_jobid ${B2_JOBID}  --exp_alphabet a --opt_output_file ${OPT_FILE_PATH} --nccl_algo RingTree --micro_batch_size 4 --pp 2 --tp 8 --fine_grained_algo sa`
+
+echo ""
+echo ${RMD}
+ps -ef | grep -v grep | grep llm_train_strategy_assignment_total
+while [ $? == 0 ]
+do
+    sleep 1
+    ps -ef | grep -v grep | grep llm_train_strategy_assignment_total
+done
+
+end_st_time=$(date +%s)
+duration_st_time=$((end_st_time - start_st_time))
+echo "Execution time strategy : $duration_st_time seconds"
+
+
+
+RUN_AMP_JOB_FILE_STR="${LOG_PATH}/write_file/2-a100-GPT8.1B-64gpu-128gbs-64layers-3072hidden-24head-RingTree-a-pipette-all_amp.sub"
+
+sh $RUN_AMP_JOB_FILE_STR
+
+ps -ef | grep -v grep | grep sub | grep gpu | grep -v merge
+while [ $? == 0 ]
+do
+    sleep 1
+    ps -ef | grep -v grep | grep sub | grep gpu | grep -v merge
+done
+
+mpirun -n $NNODES -x LD_LIBRARY_PATH -x PATH -hostfile ${LOG_PATH}/mpirank/garbage_rank_file sh ${KILL_PROGRAM}
+sleep 1
+ps -ef | grep -v grep | grep kill_garbage_process
+while [ $? == 0 ]
+do
+    sleep 1
+    ps -ef | grep -v grep | grep kill_garbage_process
+done
+
+RUN_JOB_FILE_STR="${LOG_PATH}/write_file/2-a100-GPT8.1B-64gpu-128gbs-64layers-3072hidden-24head-RingTree-a-pipette-all.sub"
+
+sh $RUN_JOB_FILE_STR
+
+ps -ef | grep -v grep | grep sub | grep gpu | grep -v merge
+while [ $? == 0 ]
+do
+    sleep 1
+    ps -ef | grep -v grep | grep sub | grep gpu | grep -v merge
+done
+
+
+# 1) 2-a100-GPT8.1B-64gpu-128gbs-64layers-3072hidden-24head-RingTree-a
+
+
+mpirun -n $NNODES -x LD_LIBRARY_PATH -x PATH -hostfile ${LOG_PATH}/mpirank/garbage_rank_file sh ${KILL_PROGRAM}
+sleep 1
+ps -ef | grep -v grep | grep kill_garbage_process
+while [ $? == 0 ]
+do
+    sleep 1
+    ps -ef | grep -v grep | grep kill_garbage_process
+done

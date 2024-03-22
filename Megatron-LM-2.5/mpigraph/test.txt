@@ -1,0 +1,8 @@
+agpu1468 slots=4
+agpu1473 slots=4
+agpu1503 slots=4
+agpu1510 slots=4
+agpu1515 slots=4
+agpu1520 slots=4
+agpu1524 slots=4
+agpu1536 slots=4
