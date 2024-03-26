@@ -1,8 +1,8 @@
-[DATE 2024] Pipette: Automatic Fine-grained Large Language Model Training Configurator for Real-World Clusters
+# [DATE 2024] Pipette: Automatic Fine-grained Large Language Model Training Configurator for Real-World Clusters
 
 We 
 
-Motivation
+## Motivation
 
 The 
 
