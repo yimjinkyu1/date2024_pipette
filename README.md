@@ -6,51 +6,43 @@ We
 
 The 
 
-Content
+## Content
++ Codebases
++ Setups
++ Overall Steps
++ Some Tips
++ Roadmap
 
-Codebases
-Setups
-Overall Steps
-Some Tips
-Roadmap
-Codebases
+### Codebases
 
-Megatron-LM :
-Varuna :
-AMP : 
+1. Megatron-LM :
+2. Varuna :
+3. AMP : 
 
-Setups
+### Setups
 
-Hardware
-
+1. Hardware
 ...
 
-Operating System
-
+2. Operating System
 ...
 
-Software
-
+3. Software
 ...
 
-Overall Steps
+### Overall Steps
 
 1. See setup
-
 ...
 
 2. See ...
-
 ...
 
 3. Run training
-
 ..
 
-Some Tips
-
+### Some Tips
 ...
 
-Roadmap
-
+### Roadmap
 ...
