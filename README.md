@@ -25,6 +25,7 @@ We diagnose that these methods tend to have three main limitations that restrict
 ## Setups
 
 1. Hardware
+---
 Mid-range Cluster
 GPU: 8x NVIDIA V100
 CPU: 2x Xeon Gold 6142, 16cores
