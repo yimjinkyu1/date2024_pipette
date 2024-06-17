@@ -56,8 +56,8 @@ RHEL 8.4
 
 ### 3. Software
 
-
 CUDA 11.6, PyTorch 1.14.3
+
 ---
 ### Overall Steps
 
