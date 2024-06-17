@@ -28,10 +28,15 @@ We diagnose that these methods tend to have three main limitations that restrict
 
 
 Mid-range Cluster
+
 GPU: 8x NVIDIA V100
+
 CPU: 2x Xeon Gold 6142, 16cores
+
 Memory: 768GB DDR4 ECC
+
 Inter-node: Infiniband EDR (100Gbps)
+
 Intra-node: NVLink (300GBps)
 
 High-end Cluster
