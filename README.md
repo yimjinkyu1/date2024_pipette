@@ -13,7 +13,7 @@ We diagnose that these methods tend to have three main limitations that restrict
 + Setups
 + Overall Steps
 + Some Tips
-+ Roadmap
+
 ---
 ### Codebases
 
@@ -62,7 +62,9 @@ CUDA 11.6, PyTorch 1.14.3
 ### Overall Steps
 
 1. See setup
-   
+In the folder above, there are codes that comprehensively summarize the algorithms described in the paper on pipette. Specifically, the file llm_train_strategy_assignment_total_v3.py contains the entire code for finding the optimal 3D configurator.
+
+The files csv_to* generate scripts automatically to facilitate program execution.   
 
 2. See ...
 ...
