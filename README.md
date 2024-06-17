@@ -58,16 +58,16 @@ RHEL 8.4
 
 
 CUDA 11.6, PyTorch 1.14.3
-
+---
 ### Overall Steps
 
 1. See setup
    
 
-3. See ...
+2. See ...
 ...
 
-4. Run training
+3. Run training
 ..
 ---
 ### Some Tips
