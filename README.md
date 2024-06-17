@@ -24,7 +24,7 @@ We diagnose that these methods tend to have three main limitations that restrict
 ---
 ## Setups
 
-1. Hardware
+###1. Hardware
 
 
 Mid-range Cluster
@@ -41,10 +41,12 @@ Memory: 1TB DDR4 ECC
 Inter-node: Infiniband HDR (200Gbps)
 Intra-node: NVLink (600GBps)
 
-2. Operating System
+###2. Operating System
+
+   
 RHEL 8.4
 
-3. Software
+###3. Software
 CUDA 11.6, PyTorch 1.14.3
 
 ### Overall Steps
