@@ -61,18 +61,23 @@ CUDA 11.6, PyTorch 1.14.3
 ---
 ### Overall Steps
 
-1. See setup
+#### 1. See merge4 folder (Megatron-LM-2.5 > strategy > merge4)
+    
 In the folder above, there are codes that comprehensively summarize the algorithms described in the paper on pipette. Specifically, the file llm_train_strategy_assignment_total_v3.py contains the entire code for finding the optimal 3D configurator.
 
 The files csv_to* generate scripts automatically to facilitate program execution.   
 
-2. See ...
-...
+#### 2. See predict_model (Megatron-LM-2.5 > strategy > merge4 > predict_model)
 
-3. Run training
-..
+The folder contains code to train an MLP model that predicts the expected GPU memory usage during training of the LLM model.
+
+#### 3. Run training (Megatron-LM-2.5 > script > *.sub)
+
+The *.sub files in the above folder are executable files that include code for testing, profiling, and storing experimental results. Please refer to the file named date_testid_a100_a_merge_64gpu_after_date_testid1_a_submit.sub for execution.
+
 ---
 ### Some Tips
-...
+
+To find the optimal 3D configurator, it is essential that the nccl test runs successfully and that a model for predicting memory usage is prepared. If there is no memory prediction model available, the corresponding section should be excluded from the llm_train_strategy_assignment_total_v3.py file. Additionally, profiling of the computation times for forward and backward operations on a single GPU should be done in advance. It is recommended to follow these guidelines for smooth operation.
 ---
 
