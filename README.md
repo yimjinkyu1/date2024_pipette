@@ -20,7 +20,7 @@ We diagnose that these methods tend to have three main limitations that restrict
 1. Megatron-LM : https://github.com/NVIDIA/Megatron-LM
 2. Varuna : https://github.com/microsoft/varuna
 3. AMP : https://github.com/DachengLi1/AMP
-4. NCCL-tests: 
+4. NCCL-tests: https://github.com/NVIDIA/nccl-tests
 ---
 ## Setups
 
@@ -62,16 +62,15 @@ CUDA 11.6, PyTorch 1.14.3
 ### Overall Steps
 
 1. See setup
+   
+
+3. See ...
 ...
 
-2. See ...
-...
-
-3. Run training
+4. Run training
 ..
 ---
 ### Some Tips
 ...
 ---
-### Roadmap
-...
+
